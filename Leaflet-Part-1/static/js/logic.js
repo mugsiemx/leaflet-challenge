@@ -16,62 +16,77 @@ function createFeatures(earthquakeData) {
   // console.log(earthquakeData);
   // Define a function that we want to run once for each feature in the features array.
   // Give each feature a popup that describes the place and time of the earthquake.
+  
+  
+  
   function doOnEachFeature(feature, layer) {
+    function circleMarkers(feature, latlng) {
+        // get the third element in the coordinates array for radius calculation  
+        var geometry = earthquakes[i].geometry;
+        var geoLat = geometry.coordinates[1];
+        var geoLng = geometry.coordinates[0];
+        var geoDepth = geometry.coordinates[2];
+        var depth = int(geoDepth) * 10;
+
+        var geojsonMarkerOptions = {
+            radius: depth,
+            color: selectColor(depth),
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+        };
     // console.log(feature, layer),
         layer.bindPopup(`<h1>${feature.properties.place}</h1><hr><p>${new Date(feature.properties.time)}</p>`);
     // layer.bindPopup(`<h1>${feature.properties.place}</h1><hr><p>${new Date(feature.properties.time)}</p>`);
-  }
+  }};
 
   // Create a GeoJSON layer that contains the features array on the earthquakeData object.
   // Run the onEachFeature function once for each piece of data in the array.
   //parsing the data and has default features we can use for further processing.
   var earthquakes = L.geoJSON(earthquakeData, {
-    onEachFeature: doOnEachFeature
+    onEachFeature: doOnEachFeature,
+    pointToLayer: circleMarkers
   });
+
   // console.log(earthquakes);
   // Send our earthquakes layer to the createMap function/
   createMap(earthquakes);
 }
 
+
+
+
 function createMap(earthquakes) {
   var earthquakeMarkers = [];
 
-  //   var geojsonMarkerOptions = {
-//       radius: 8,
-//       color: color,
-//       weight: 1,
-//       opacity: 1,
-//       fillOpacity: 0.8
-// };
-  // function selectColor(); {
-  //   var color = "";
 
-  //   if {(depth > 9) {color = "Red"}};
-  //   else if {(depth > 90) {color = "Red"}};
-  //   else if {(depth > 70) {color = "Red"}};
-  //   else if {(depth > 50) {color = "Red"}};
-  //   else if {(depth > 30) {color = "Red"}};
-  //   else if {(depth > 10) {color = "Red"}};
-  //   else if {(depth > -10) {color = "Red"}};
-  //   else {color = "Red"}};
-  //   };
-// Loop through locations, and create markers.
-for (var i = 0; i < earthquakes.length; i++) {
-  var depth = earthquakes[i].geometry.coordinates[2]
-  console.log(depth)
-  // Setting the marker radius for the earthquake location
-  console.log(earthquakes[i].geometry)
-  //  by passing the third coordinate into the markerSize function
-  earthquakeMarkers.push(
-    L.circle(earthquakes[i].coordinates, {
+
+
+  // Loop through the records, and create markers.
+  for (var i = 0; i < earthquakes.length; i++) {
+
+    // set up color change by clearing previous color
+    var color = "";
+    // then passing the third coordinate into the markerSize function
+    if (depth > 90) {color = "Red"}
+      else if (depth > 70) {color = "Red"}
+      else if (depth > 50) {color = "Red"}
+      else if (depth > 30) {color = "Red"}
+      else if (depth > 10) {color = "Red"}
+      else if (depth > -10) {color = "Red"}
+      else {color = "Red"}
+    
+    //  by passing the third coordinate into the markerSize function
+    // earthquakeMarkers.push(
+    var circle = L.circle(geoLat, geoLng, {
       stroke: false,
       fillOpacity: 0.75,
-      color: "",
-      fillColor: "white",
-      radius: markerSize(earthquakes[i].state.population),
-    })
-  );
-};
+      color: color,
+      // fillColor: "white",
+      radius: markerSize(depth),
+    }).addTo(map);
+    // );
+  };
   // create the base layers
   var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
