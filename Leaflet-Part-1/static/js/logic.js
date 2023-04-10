@@ -5,6 +5,7 @@
 // declare variables
 url = "data/all_week.geojson"
 
+
 //define functions changing defaults
   // change color function for third coordinate (depth)
 function selectColor(depth) {
@@ -12,27 +13,25 @@ function selectColor(depth) {
   var color = "";
   // then passing the depth into the circle color function
   if (depth > 90) {color = "Red"}
-    else if (depth > 70) {color = "Orange"}
-    else if (depth > 50) {color = "Salmon"}
-    else if (depth > 30) {color = "PaleGoldenRod"}
-    else if (depth > 10) {color = "GreenYellow"}
-    else if (depth > -10) {color = "LawnGreen"}
-    else {color = "Gold"}
+    else if (depth > 70) {color == "Orange"}
+    else if (depth > 50) {color == "Salmon"}
+    else if (depth > 30) {color == "PaleGoldenRod"}
+    else if (depth > 10) {color == "GreenYellow"}
+    else if (depth > -10) {color == "LawnGreen"}
+    else {color == "Gold"}
+  return color
 };
-  // change the circle sizes based on size of earthquake
-function sizeChange(mag) {
-  
-}
 
 // Perform a GET request to the query URL/
 d3.json(url).then(function (data) {
   // create variable for the response, data.features object
-  var earthquakeData = data.features
+  var earthquakeData = data.features  
   createFeatures(earthquakeData);
 });
-
+console.log(magnitude)
 function createFeatures(earthquakeData) {
-  console.log(earthquakeData);
+  // console.log(earthquakeData);
+
   // Define a function that we want to run once for each feature in the features array.
   // Give each feature a popup that describes the place and time of the earthquake.
     
@@ -46,41 +45,59 @@ function createFeatures(earthquakeData) {
   // Run the onEachFeature function once for each piece of data in the array.
   //parsing the data and has default features we can use for further processing.
   var earthquakes = L.geoJSON(earthquakeData, {
-    onEachFeature: doOnEachFeature
-  });
+    // var latlng = [earthquakeData.geometry.coordinates[1],
+    //               earthquakeData.geometry.coordinates[0]]
+    // var
+    onEachFeature: doOnEachFeature,
+
+
+
+    pointToLayer: function (feature, coordinates) {
+      var latlng = [earthquakeData.geometry.coordinates[1],
+                    earthquakeData.geometry.coordinates[0]];
+
+      var geojsonMarkerOptions = {
+        color: color,
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8,
+        radius: size(feature.properties.mag)
+    }
+      return L.circle(coordinates, geojsonMarkerOptions)
+    }
+  }).addTo(map);
   // Send our earthquakes layer to the createMap function/
     createMap(earthquakes);
 }
 
 function createMap(earthquakes) {
+  // console.log(earthquakes);
   // var earthquakeMarkers = [];
 
   // create the base layers
   var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   })
-
   // var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
   //   attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
   // });
+
   // Create a separate layer group: new circle markers
   // Loop through the cities array, and create one marker for each city object.
   for (var i = 0; i < earthquakes.length; i++) {
-    L.circle(earthquakes[i].geometry.coordinates[0], {
+
+
+    var location = [earthquakes[i].geometry.coordinates[1],
+                    earthquakes[i].geometry.coordinates[0]]
+    L.circle(location, {
       fillOpacity: 0.75,
-      color: ,
-      fillColor: "purple",
+      color: selectColor(earthquakes[i].geometry.coordinates[2]),
       // Setting our circle's radius to equal the output of our markerSize() function:
-      // This will make our marker's size proportionate to its population.
-      radius: markerSize(cities[i].population)
-    }).bindPopup(`<h1>${cities[i].name}</h1> <hr> <h3>Population: ${cities[i].population.toLocaleString()}</h3>`).addTo(myMap);
+      // This will make our marker's size proportionate to the earthquake magnitidue
+      radius: markerSize(earthquakes.properties.mag),
+
+    }).bindPopup(`<h1>${earthquakes[i].coordinates}</h1> <hr> <h3>Population: ${cities[i].population.toLocaleString()}</h3>`).addTo(myMap);
   }
-
-
-
-
-
-  var circle = L.layerGroup(circleMarkers);
 
   // create a baseMaps object
   var baseMaps = {
