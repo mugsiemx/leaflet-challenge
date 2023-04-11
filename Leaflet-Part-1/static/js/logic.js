@@ -5,7 +5,6 @@
 // declare variables
 url = "data/all_week.geojson"
 
-
 //define functions changing defaults
   // change color function for third coordinate (depth)
 function selectColor(depth) {
@@ -22,52 +21,65 @@ function selectColor(depth) {
   return color
 };
 
+// A function to determine the marker size based on magnitude of earthquake
+function markerSize(magnitude) {
+  return Math.sqrt(magnitude) * 50;
+}
+
+
 // Perform a GET request to the query URL/
 d3.json(url).then(function (data) {
   // create variable for the response, data.features object
   var earthquakeData = data.features  
   createFeatures(earthquakeData);
 });
-console.log(magnitude)
+
 function createFeatures(earthquakeData) {
   // console.log(earthquakeData);
 
   // Define a function that we want to run once for each feature in the features array.
   // Give each feature a popup that describes the place and time of the earthquake.
     
-  function doOnEachFeature(feature, layer) {
+  function OnEachFeature(feature, layer) {
       
     // console.log(feature, layer),
     layer.bindPopup(`<h1>${feature.properties.place}</h1><hr><p>${new Date(feature.properties.time)}</p>`);
   }
+  var earthquakes = L.geoJSON(earthquakeData).addTo(map);
 
-  // Create a GeoJSON layer that contains the features array on the earthquakeData object.
-  // Run the onEachFeature function once for each piece of data in the array.
-  //parsing the data and has default features we can use for further processing.
-  var earthquakes = L.geoJSON(earthquakeData, {
-    // var latlng = [earthquakeData.geometry.coordinates[1],
-    //               earthquakeData.geometry.coordinates[0]]
-    // var
-    onEachFeature: doOnEachFeature,
+  // // Create a GeoJSON layer that contains the features array on the earthquakeData object.
+  // // Run the onEachFeature function once for each piece of data in the array.
+  // //parsing the data and has default features we can use for further processing.
+  // var earthquakes = L.geoJSON(earthquakeData, {
+  //   style: function(feature) {
+  //     return {
+  //       color: "green"
+  //     };
+  //   },
 
+  //   pointToLayer: function(feature, latlng) {
+  //     return new L.CircleMarker(latlng, {
+  //       radius: 10,
+  //       fillOpacity: 0.85
+  //     });
+  //   },
+  //   onEachFeature: function (feature, layer) {
+  //     layer.bindPopup(feature.properties.place);
+  //   }
 
-
-    pointToLayer: function (feature, coordinates) {
-      var latlng = [earthquakeData.geometry.coordinates[1],
-                    earthquakeData.geometry.coordinates[0]];
-
-      var geojsonMarkerOptions = {
-        color: color,
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 0.8,
-        radius: size(feature.properties.mag)
-    }
-      return L.circle(coordinates, geojsonMarkerOptions)
-    }
-  }).addTo(map);
+  //   //   var geojsonMarkerOptions = {
+  //   //     color: color,
+  //   //     weight: 1,
+  //   //     opacity: 1,
+  //   //     fillOpacity: 0.8,
+  //   //     radius: size(feature.properties.mag)
+  //   // }
+  //   //   return L.circle(coordinates, geojsonMarkerOptions)
+  //   // }
+  // });
+  // map.addLayer(earthquakes);
   // Send our earthquakes layer to the createMap function/
-    createMap(earthquakes);
+  createMap(earthquakes);
 }
 
 function createMap(earthquakes) {
@@ -98,7 +110,25 @@ function createMap(earthquakes) {
 
     }).bindPopup(`<h1>${earthquakes[i].coordinates}</h1> <hr> <h3>Population: ${cities[i].population.toLocaleString()}</h3>`).addTo(myMap);
   }
+  // create legend
+  var legend = L.control({position: 'bottomright'});
 
+legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'info legend'),
+        grades = ['-10-10', ],
+        labels = [];
+
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+            '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+    }
+
+    return div;
+};
+legend.addTo(map);
   // create a baseMaps object
   var baseMaps = {
     "Street Map": street,
