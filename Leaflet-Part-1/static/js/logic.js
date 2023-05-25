@@ -8,22 +8,21 @@ var queryUrl = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&
 //     {color:'red',opacity:0.3,weight:1, fillColor: 'red',fillOpacity:.3, radius: rad})
 //     .bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}</p>`)
 //      .addTo(map);
-// // // change the color based on feature's mag
-// function chooseColor(magnitude) {
-//   var color = "";
-//   // then passing the depth into the circle color function, deeper = darker color
-//   if (depth > 90) {color = "Red"}
-//     else if (depth > 70) {color == "Orange"}
-//     else if (depth > 50) {color == "Salmon"}
-//     else if (depth > 30) {color == "PaleGoldenRod"}
-//     else if (depth > 10) {color == "GreenYellow"}
-//     else if (depth > -10) {color == "LawnGreen"}
-//     else {color == "LightGreen"}
 
-//     return {
-//       color
-//   }
-// }
+// change the color based on feature's earthquake depth
+cats = ['-10-10','10-30','30-50','50-70','70-90','90+'];
+colors = ['LawnGreen', 'GreenYellow', 'PaleGoldenRod', 'Salmon', 'Orange', 'Red', 'LightGreen']
+
+function getColor(d) {
+  // then passing the depth into the circle color function
+  return  d > 90 ? 'Red':
+          d > 70 ? 'Orange':
+          d > 50 ? 'Salmon':
+          d > 30 ? 'PaleGoldenRod':
+          d > 10 ? 'GreenYellow':
+          d > -10 ? 'LawnGreen':
+          'LightGreen';
+}
 
 // Perform a GET request to the query URL/
 d3.json(queryUrl).then(function (data) {
@@ -39,7 +38,7 @@ function createFeatures(earthquakeData) {
   function doOnEachFeature(feature, layer) {
 
 
-    layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}</p>`);
+    layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}</p><ul><li>Earthquake Magnitude: ${feature.properties.mag}</li><li>Earthquake Depth: ${feature.geometry.coordinates[2]}</li></ul>`);
   }
 
   // Create a GeoJSON layer that contains the features array on the earthquakeData object.
@@ -47,12 +46,11 @@ function createFeatures(earthquakeData) {
   //parsing the data and has default features we can use for further processing.
   var earthquakes = L.geoJSON(earthquakeData, {
     pointToLayer: function(feature, latlng) {
-      return new L.CircleMarker(latlng, {
-        radius: 5,
+      return new L.CircleMarker(latlng, {  
         // higher magnitudes, bigger circles
-        radius:feature.properties.mag * 3,
-        fillColor: 'red', //chooseColor(feature.geometry.coordinates[2]),
-        color: 'red', //chooseColor(feature.geometry.coordinates[2]),
+        radius:feature.properties.mag * 5,
+        fillColor: getColor(feature.geometry.coordinates[2]),
+        // color: 'red',//chooseColor(feature.geometry.coordinates[2]),
         weight: 1,
         opacity: .8,
         fillOpacity: 0.35
@@ -76,6 +74,8 @@ function createMap(earthquakes) {
     attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
   });
 
+
+
   // Create a baseMaps object.
   var baseMaps = {
     "Street Map": street,
@@ -88,20 +88,43 @@ function createMap(earthquakes) {
   };
 
   // Create our map, giving it the streetmap and earthquakes layers to display on load.
-  var myMap = L.map("map", {
+  var map = L.map("map", {
     center: [
       37.09, -95.71
     ],
     zoom: 5,
     layers: [street, earthquakes]
   });
+  
+  // Create a legend to add to map
+  var legend = L.control({position: 'bottomright'});
+  // legend.onAdd = function() {};
+  legend.onAdd = function () {
+
+  var div = L.DomUtil.create('div', 'info legend');
+  // var labels = ['<strong>Depth</strong>'];
+  // var categories = [cats];
+
+  for (var i = 0; i < cats.length; i++) {
+    var item = `<i class='square' style='background: ${colors[i]} '> ${cats[i]}</i><br>`
+    console.log(item);
+    div.innerHTML += item
+        // labels.push(
+        // `<i class='square' style='background:' + ${colors[i]} + ${cats[i]}</i><br>`;
+  }
+    // div.innerHTML = labels.join('<br>');
+  return div;
+  };
+  legend.addTo(map);
+
 
   // Create a layer control.
-  // Pass it our baseMaps and overlayMaps.
-  // Add the layer control to the map.
-  L.control.layers(baseMaps, overlayMaps, {
+  L.control.layers(
+  // Pass it our baseMaps and overlayMaps. 
+  baseMaps, overlayMaps, {
     collapsed: false
-  }).addTo(myMap);
+  // Add the layer control to the map.
+  }).addTo(map);
 
 }
 
