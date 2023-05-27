@@ -2,26 +2,22 @@
 var url = 'data/all_week.geojson'
 
 // Store our API endpoint as queryUrl.
-var queryUrl = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2021-01-01&endtime=2021-01-02&maxlongitude=-69.52148437&minlongitude=-123.83789062&maxlatitude=48.74894534&minlatitude=25.16517337";
-
-// var circleMarker = L.circleMarker([row.countryInfo.lat, row.countryInfo.long],
-//     {color:'red',opacity:0.3,weight:1, fillColor: 'red',fillOpacity:.3, radius: rad})
-//     .bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}</p>`)
-//      .addTo(map);
+// selection based on all earthquakes for the last 30 days
+var queryUrl = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson'
 
 // change the color based on feature's earthquake depth
 cats = ['-10-10','10-30','30-50','50-70','70-90','90+'];
-colors = ['LawnGreen', 'GreenYellow', 'PaleGoldenRod', 'Salmon', 'Orange', 'Red', 'LightGreen']
+colors = ['GreenYellow', 'LawnGreen', 'Tan', 'Salmon', 'Orange', 'Red', 'LightGreen']
 
 function getColor(d) {
   // then passing the depth into the circle color function
-  return  d > 90 ? 'Red':
-          d > 70 ? 'Orange':
-          d > 50 ? 'Salmon':
-          d > 30 ? 'PaleGoldenRod':
-          d > 10 ? 'GreenYellow':
-          d > -10 ? 'LawnGreen':
-          'LightGreen';
+  return  d > 90 ?  colors[6]:
+          d > 70 ?  colors[5]:
+          d > 50 ?  colors[4]:
+          d > 30 ?  colors[3]:
+          d > 10 ?  colors[2]:
+          d > -10 ? colors[1]:
+          colors[7];
 }
 
 // Perform a GET request to the query URL/
@@ -36,8 +32,8 @@ function createFeatures(earthquakeData) {
   // Define a function that we want to run once for each feature in the features array.
   // Give each feature a popup that describes the place and time of the earthquake.
   function doOnEachFeature(feature, layer) {
-
-
+  // Each point has a tooltip with the Magnitude, the location and depth
+      // date was interesting to post also
     layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}</p><ul><li>Earthquake Magnitude: ${feature.properties.mag}</li><li>Earthquake Depth: ${feature.geometry.coordinates[2]}</li></ul>`);
   }
 
@@ -47,13 +43,14 @@ function createFeatures(earthquakeData) {
   var earthquakes = L.geoJSON(earthquakeData, {
     pointToLayer: function(feature, latlng) {
       return new L.CircleMarker(latlng, {  
-        // higher magnitudes, bigger circles
+        // data points scale with magnitude level
         radius:feature.properties.mag * 5,
+        // data points colors change with depth level
         fillColor: getColor(feature.geometry.coordinates[2]),
-        // color: 'red',//chooseColor(feature.geometry.coordinates[2]),
-        weight: 1,
+        color: 'black',        //getColor(feature.geometry.coordinates[2]),
+        weight: .2,
         opacity: .8,
-        fillOpacity: 0.35
+        fillOpacity: 3   //0.35
       });
     },
     onEachFeature: doOnEachFeature
@@ -74,8 +71,6 @@ function createMap(earthquakes) {
     attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
   });
 
-
-
   // Create a baseMaps object.
   var baseMaps = {
     "Street Map": street,
@@ -92,31 +87,21 @@ function createMap(earthquakes) {
     center: [
       37.09, -95.71
     ],
-    zoom: 5,
+    zoom: 4,
     layers: [street, earthquakes]
   });
   
   // Create a legend to add to map
   var legend = L.control({position: 'bottomright'});
-  // legend.onAdd = function() {};
   legend.onAdd = function () {
 
   var div = L.DomUtil.create('div', 'info legend');
-  // var labels = ['<strong>Depth</strong>'];
-  // var categories = [cats];
 
   for (var i = 0; i < cats.length; i++) {
-    var item = `<i class='square' style='background: ${colors[i]} '> ${cats[i]}</i><br>`
-    console.log(item);
+    var item = `<li style='background: ${colors[i]} '></li>   ${cats[i]}<br>`
+    // console.log(item);
     div.innerHTML += item
-        // labels.push(
-        // `<i class='square' style='background:' + ${colors[i]} + ${cats[i]}</i><br>`;
-  }
-    // div.innerHTML = labels.join('<br>');
-  return div;
-  };
-  legend.addTo(map);
-
+    }return div };legend.addTo(map);
 
   // Create a layer control.
   L.control.layers(
