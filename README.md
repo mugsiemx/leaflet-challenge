@@ -14,7 +14,7 @@ Part 1: Create the Earthquake Visualization (we did not fully attempt Part 2)
 - Create the Earthquake Visualization
 -- The USGS provides earthquake data in a number of different formats, updated every 5 minutes. Visit the USGS GeoJSON FeedLinks to an external site. page and choose a dataset to visualize through the following link: https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson
 
-![Requested Map Visual](https://github.com/mugsiemx/leaflet-challenge/blob/main/Leaflet-Part-1/Images/2-BasicMap.png)
+![Requested Map Visual](https://github.com/mugsiemx/leaflet-challenge/blob/main/Leaflet-Part-1/Images/map.png)
 
 - Import and visualize the data by doing the following:
 -- Using Leaflet, create a map that plots all the earthquakes from the downloaded dataset based on their longitude and latitude.
