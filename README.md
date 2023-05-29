@@ -35,3 +35,4 @@ Part 1: Create the Earthquake Visualization (we did not fully attempt Part 2)
 - Change style of GeoJSON circle marker by feature properties https://gis.stackexchange.com/questions/220489/change-style-of-geojson-circle-marker-by-feature-properties
 - https://gis.stackexchange.com/questions/133630/adding-leaflet-legend
 --Credits to my support system: Our Instructor, Will; Learning Assistants, Michelle, Yasmine, and Randy; the BCS team; my colleagues: Rhi, Molly, Tazia, and Julie; and to my loving and patient husband, Eric.
+- Thank you graders, CG and AJ, I made an error on my list index which made my circle colors incorrect. Fixed that and resubmitted.
